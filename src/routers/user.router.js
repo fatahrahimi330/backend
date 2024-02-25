@@ -23,87 +23,40 @@ router.post(
     res.status(BAD_REQUEST).send('Username or password is invalid');
   })
 );
-
 router.post(
   '/register',
   handler(async (req, res) => {
+    const { name, email, password, address } = req.body;
     try {
-      const usersData = req.body;
-      if (!Array.isArray(usersData) || !usersData.length) {
-        res.status(BAD_REQUEST).send('Invalid user data');
+      const user = await UserModel.findOne({ email });
+
+      if (user) {
+        res.status(BAD_REQUEST).send('User already exists, please login!');
         return;
       }
 
-      const results = [];
+      const hashedPassword = await bcrypt.hash(
+        password,
+        PASSWORD_HASH_SALT_ROUNDS
+      );
 
-      for (let i = 0; i < usersData.length; i++) {
-        const { name, email, password, address } = usersData[i];
+      const newUser = {
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        address,
+      };
 
-        try {
-          const user = await UserModel.findOne({ email });
-
-          if (user) {
-            results.push({ email, success: false, reason: 'User already exists' });
-            continue;
-          }
-
-          const hashedPassword = await bcrypt.hash(password, PASSWORD_HASH_SALT_ROUNDS);
-
-          const newUser = {
-            name,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            address,
-          };
-
-          const result = await UserModel.create(newUser);
-          results.push({ email, success: true, userId: result.id });
-        } catch (error) {
-          console.error(`Error registering user ${email}:`, error);
-          results.push({ email, success: false, reason: 'Internal Server Error' });
-        }
-      }
-
-      res.send(results);
+      const result = await UserModel.create(newUser);
+      res.send(generateTokenResponse(result));
     } catch (error) {
-      console.error('Error registering multiple users:', error);
+      console.error('Error during registration:', error);
       res.status(500).send('Internal Server Error');
     }
   })
 );
 
-// router.post(
-//   '/register',
-//   handler(async (req, res) => {
-//     const { name, email, password, address } = req.body;
-//     try {
-//       const user = await UserModel.findOne({ email });
 
-//       if (user) {
-//         res.status(BAD_REQUEST).send('User already exists, please login!');
-//         return;
-//       }
-
-//       const hashedPassword = await bcrypt.hash(
-//         password,
-//         PASSWORD_HASH_SALT_ROUNDS
-//       );
-
-//       const newUser = {
-//         name,
-//         email: email.toLowerCase(),
-//         password: hashedPassword,
-//         address,
-//       };
-
-//       const result = await UserModel.create(newUser);
-//       res.send(generateTokenResponse(result));
-//     } catch (error) {
-//       console.error('Error during registration:', error);
-//       res.status(500).send('Internal Server Error');
-//     }
-//   })
-// );
 
 
 router.put(
