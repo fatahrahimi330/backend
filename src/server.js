@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: ['https://backend-by48.onrender.com'],
+    origin: ['https://backend-by48.onrender.com/'],
   })
 );
 
