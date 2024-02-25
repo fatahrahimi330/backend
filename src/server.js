@@ -33,8 +33,7 @@ const publicFolder = path.join(__dirname, 'public');
 app.use(express.static(publicFolder));
 
 app.get('*', (req, res) => {
-  const indexFilePath = path.join(publicFolder, 'index.html');
-  res.sendFile(indexFilePath);
+  res.json({ message: 'hello' });
 });
 
 const PORT = process.env.PORT || 5000;
