@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: ['https://frontend-1-pvv7.onrender.com/'],
+    origin: ['http://localhost:3000'],
   })
 );
 
